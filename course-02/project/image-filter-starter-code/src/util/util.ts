@@ -27,6 +27,15 @@ export async function filterImageFromURL(inputURL: string): Promise<string> {
   });
 }
 
+//getAllLocalFiles
+// helper function to get all files on the local disk
+
+export  function getAllLocalFiles(){
+  var files: Array<string> = fs.readdirSync(__dirname + "/tmp");
+  console.log("files", files)
+  return files
+}
+
 // deleteLocalFiles
 // helper function to delete files on the local disk
 // useful to cleanup after tasks
@@ -34,6 +43,6 @@ export async function filterImageFromURL(inputURL: string): Promise<string> {
 //    files: Array<string> an array of absolute paths to files
 export async function deleteLocalFiles(files: Array<string>) {
   for (let file of files) {
-    fs.unlinkSync(file);
+    fs.unlinkSync(__dirname+"/tmp/"+file);
   }
 }
