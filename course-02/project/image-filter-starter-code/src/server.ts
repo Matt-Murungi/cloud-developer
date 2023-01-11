@@ -30,7 +30,7 @@ import {filterImageFromURL, deleteLocalFiles, getAllLocalFiles} from './util/uti
           }
         } else{
           console.log("error ", err.message)
-          res.send({err})
+          res.status(422).send({err})
         }
       })
 
