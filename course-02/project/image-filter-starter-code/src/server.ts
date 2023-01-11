@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import {isUri} from 'valid-url';
-import {filterImageFromURL, deleteLocalFiles, getAllLocalFiles} from './util/util';
+import { isUri } from 'valid-url';
+import { filterImageFromURL, deleteLocalFiles, getAllLocalFiles } from './util/util';
 
 (async () => {
 
@@ -14,28 +14,28 @@ import {filterImageFromURL, deleteLocalFiles, getAllLocalFiles} from './util/uti
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
 
-  app.get("/filteredimage", async(req, res)=>{
-    let imageUrl = req.query.image_url
-    if(!isUri(imageUrl)){
-      return res.status(400).send({error: "invalid image url"});
+  app.get("/filteredimage", async (req: express.Request, res: express.Response) => {
+    let imageUrl: string = req.query.image_url
+    if (!isUri(imageUrl)) {
+      return res.status(400).send({ error: "invalid image url" });
     }
-    try{
-      var filteredImage = await filterImageFromURL(imageUrl)
-      res.sendFile(filteredImage, async (err)=>{
-        if(!err){
-          var allLocalFiles = await getAllLocalFiles()
+    try {
+      var filteredImage: string = await filterImageFromURL(imageUrl)
+      res.status(200).sendFile(filteredImage, async (error: Error) => {
+        if (!error) {
+          var allLocalFiles: string[] = await getAllLocalFiles()
           if (allLocalFiles.length !== 0) {
             console.log("all files", allLocalFiles)
             await deleteLocalFiles(allLocalFiles)
           }
-        } else{
-          console.log("error ", err.message)
-          res.status(422).send({err})
+        } else {
+          console.log("error ", error.message)
+          res.status(422).send({ error })
         }
       })
 
-    }catch(e){
-      res.send({e})
+    } catch (error) {
+      res.send({ error })
     }
 
 
@@ -64,14 +64,14 @@ import {filterImageFromURL, deleteLocalFiles, getAllLocalFiles} from './util/uti
   // Root Endpoint
   // Displays a simple message to the user
 
-  app.get( "/", async ( req, res ) => {
+  app.get("/", async (req, res) => {
     res.send("try GET /filteredimage?image_url={{}}")
-  } );
+  });
 
 
   // Start the Server
-  app.listen( port, () => {
-      console.log( `server running http://localhost:${ port }` );
-      console.log( `press CTRL+C to stop server` );
-  } );
+  app.listen(port, () => {
+    console.log(`server running http://localhost:${port}`);
+    console.log(`press CTRL+C to stop server`);
+  });
 })();
