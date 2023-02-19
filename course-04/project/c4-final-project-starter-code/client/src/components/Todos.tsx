@@ -27,13 +27,15 @@ interface TodosState {
   todos: Todo[]
   newTodoName: string
   loadingTodos: boolean
+  valid: boolean
 }
 
 export class Todos extends React.PureComponent<TodosProps, TodosState> {
   state: TodosState = {
     todos: [],
     newTodoName: '',
-    loadingTodos: true
+    loadingTodos: true,
+    valid: true,
   }
 
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,19 +47,27 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   }
 
   onTodoCreate = async (event: React.ChangeEvent<HTMLButtonElement>) => {
-    try {
-      const dueDate = this.calculateDueDate()
-      const newTodo = await createTodo(this.props.auth.getIdToken(), {
-        name: this.state.newTodoName,
-        dueDate
-      })
-      this.setState({
-        todos: [...this.state.todos, newTodo],
-        newTodoName: ''
-      })
-    } catch {
-      alert('Todo creation failed')
+    if (!this.state.newTodoName) {
+      this.setState({ valid: false })
+      return
     }
+    else {
+      try {
+        this.setState({ valid: true })
+        const dueDate = this.calculateDueDate()
+        const newTodo = await createTodo(this.props.auth.getIdToken(), {
+          name: this.state.newTodoName,
+          dueDate
+        })
+        this.setState({
+          todos: [...this.state.todos, newTodo],
+          newTodoName: ''
+        })
+      } catch {
+        alert('Todo creation failed')
+      }
+    }
+
   }
 
   onTodoDelete = async (todoId: string) => {
@@ -130,6 +140,13 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
             placeholder="To change the world..."
             onChange={this.handleNameChange}
           />
+          {!this.state.valid && (
+            <Grid.Column width={16}>
+              <Header as='h4' inverted color='red'>
+                Invalid input, value cannot be empty!
+              </Header>
+            </Grid.Column>
+          )}
         </Grid.Column>
         <Grid.Column width={16}>
           <Divider />
@@ -193,7 +210,10 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
                 </Button>
               </Grid.Column>
               {todo.attachmentUrl && (
-                <Image src={todo.attachmentUrl} size="small" wrapped />
+                <Image
+                  src={todo.attachmentUrl} size="small"
+                  wrapped onError={(event: { target: { style: { display: string } } }) => event.target.style.display = 'none'}
+                />
               )}
               <Grid.Column width={16}>
                 <Divider />
